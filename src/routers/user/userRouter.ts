@@ -67,16 +67,16 @@ userRouter.post("/signin", SignInUserValidation, async (req, res) => {
                 return res.status(200).json({ token });
             } else {
                 // Passwords do not match
-                return res.status(401).send("Incorrect username or password.");
+                return res.status(401).json({"errorMessage":"Incorrect username or password."});
             }
         } else {
             // User does not exist
-            return res.status(404).send("User not found.");
+            return res.status(404).json({"errorMessage":"Incorrect username or password."});
         }
     } catch (error) {
         // Handle any errors that occur during the sign-in process
         console.error("Error signing in:", error);
-        return res.status(500).send("Internal server error.");
+        return res.status(404).json({"errorMessage":"Internal server error."});
     }
 });
 
