@@ -15,8 +15,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const client_1 = require("@prisma/client");
 const middlewares_1 = require("../../utils/middlewares");
-const { userValidate } = require("../../utils/useValidations");
+const { userValidate, SignInUserValidation } = require("../../utils/useValidations");
 const { errorLog } = require("../../utils/logger");
+const bcrypt_1 = __importDefault(require("bcrypt"));
 const { hashPassword, generateToken, validateUpdateUserPayload } = require("./userUtils");
 const userRouter = express_1.default.Router();
 const prisma = new client_1.PrismaClient();
@@ -56,6 +57,38 @@ userRouter.post("/signup", userValidate, (req, res) => __awaiter(void 0, void 0,
     }
     catch (error) {
         errorLog(error);
+    }
+}));
+userRouter.post("/signin", SignInUserValidation, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { username, password } = req.body;
+        const fetchedUser = yield prisma.user.findUnique({
+            where: {
+                username
+            }
+        });
+        if (fetchedUser) {
+            // Compare the plaintext password with the hashed password from the database
+            const passwordMatch = yield bcrypt_1.default.compare(password, fetchedUser.password);
+            if (passwordMatch) {
+                // Passwords match, generate and return a JWT token
+                const token = yield generateToken(fetchedUser);
+                return res.status(200).json({ token });
+            }
+            else {
+                // Passwords do not match
+                return res.status(401).send("Incorrect username or password.");
+            }
+        }
+        else {
+            // User does not exist
+            return res.status(404).send("User not found.");
+        }
+    }
+    catch (error) {
+        // Handle any errors that occur during the sign-in process
+        console.error("Error signing in:", error);
+        return res.status(500).send("Internal server error.");
     }
 }));
 userRouter.put("/update-user", middlewares_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {

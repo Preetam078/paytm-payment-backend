@@ -1,8 +1,9 @@
 import express, {Router, Request, Response} from "express"
 import { PrismaClient } from "@prisma/client"
 import { authMiddleware } from "../../utils/middlewares"
-const {userValidate} = require("../../utils/useValidations")
+const {userValidate, SignInUserValidation} = require("../../utils/useValidations")
 const {errorLog} = require("../../utils/logger")
+import bcrypt from "bcrypt";
 const {hashPassword, generateToken, validateUpdateUserPayload} = require("./userUtils")
 
 const userRouter:Router = express.Router()
@@ -48,6 +49,36 @@ userRouter.post("/signup",userValidate, async(req:Request, res:Response) => {
         errorLog(error)
     }
 })
+
+userRouter.post("/signin", SignInUserValidation, async (req, res) => {
+    try {
+        const { username, password } = req.body;
+        const fetchedUser = await prisma.user.findUnique({
+            where: {
+                username
+            }
+        });
+        if (fetchedUser) {
+            // Compare the plaintext password with the hashed password from the database
+            const passwordMatch = await bcrypt.compare(password, fetchedUser.password);
+            if (passwordMatch) {
+                // Passwords match, generate and return a JWT token
+                const token = await generateToken(fetchedUser);
+                return res.status(200).json({ token });
+            } else {
+                // Passwords do not match
+                return res.status(401).send("Incorrect username or password.");
+            }
+        } else {
+            // User does not exist
+            return res.status(404).send("User not found.");
+        }
+    } catch (error) {
+        // Handle any errors that occur during the sign-in process
+        console.error("Error signing in:", error);
+        return res.status(500).send("Internal server error.");
+    }
+});
 
 userRouter.put("/update-user", authMiddleware, async(req:Request, res:Response) => {
     try {

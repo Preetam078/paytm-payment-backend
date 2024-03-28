@@ -9,6 +9,21 @@ const userValidationSchema = zod_1.default.object({
     firstname: zod_1.default.string(),
     lastname: zod_1.default.string()
 });
+const SignInUserSchema = zod_1.default.object({
+    username: zod_1.default.string(),
+    password: zod_1.default.string()
+});
+const SignInUserValidation = (req, res, next) => {
+    const { username, password } = req.body;
+    const validationResult = SignInUserSchema.safeParse({ username, password });
+    if (validationResult.success) {
+        console.log("inside success");
+        next();
+    }
+    else {
+        res.status(501).send("please enter a valid input for login");
+    }
+};
 function userValidate(req, res, next) {
     const { username, firstname, lastname, password } = req.body;
     const userValidateResult = userValidationSchema.safeParse({ username, firstname, lastname, password });
@@ -19,4 +34,4 @@ function userValidate(req, res, next) {
         res.status(501).send("please enter a valid payload for user");
     }
 }
-module.exports = { userValidate };
+module.exports = { userValidate, SignInUserValidation };
