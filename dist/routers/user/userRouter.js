@@ -104,7 +104,7 @@ userRouter.post("/signin", SignInUserValidation, (req, res) => __awaiter(void 0,
         }
         else {
             // User does not exist
-            return res.status(404).json({ "errorMessage": "Incorrect username or password." });
+            return res.status(404).json({ "errorMessage": "User doesnot exists." });
         }
     }
     catch (error) {
