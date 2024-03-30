@@ -35,14 +35,21 @@ userRouter.post("/signup",userValidate, async(req:Request, res:Response) => {
             }
         })
         const userId = newUser.id
-        await prisma.account.create({
+        const newAccount = await prisma.account.create({
             data: {
                 userId,
                 balance: 1 + Math.random()* 10000
             }
         })
-
-        const token = await generateToken(newUser)
+        const signupResponse = {
+            userId,
+            username: newUser.username, 
+            firstname: newUser.firstname,
+            lastname: newUser.lastname, 
+            accountId: newAccount.id, 
+            accountBalance: newAccount.balance
+        }
+        const token = await generateToken(signupResponse)
         res.status(201).json({message:"user created successfully",token})
 
     } catch (error) {
@@ -63,7 +70,21 @@ userRouter.post("/signin", SignInUserValidation, async (req, res) => {
             const passwordMatch = await bcrypt.compare(password, fetchedUser.password);
             if (passwordMatch) {
                 // Passwords match, generate and return a JWT token
-                const token = await generateToken(fetchedUser);
+                //if password matches then we will procced with fetching the account details
+                const accountDetails = await prisma.account.findMany({
+                    where: {
+                        userId: fetchedUser.id, 
+                    }
+                })
+                const loggedInResponse = {
+                    userId: fetchedUser.id, 
+                    username: fetchedUser.username, 
+                    firstname: fetchedUser.firstname, 
+                    lastname: fetchedUser.lastname, 
+                    accountId: accountDetails[0].id, 
+                    accountBalance: accountDetails[0].balance
+                }
+                const token = await generateToken(loggedInResponse);
                 return res.status(200).json({ token });
             } else {
                 // Passwords do not match

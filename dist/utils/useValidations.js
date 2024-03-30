@@ -17,7 +17,6 @@ const SignInUserValidation = (req, res, next) => {
     const { username, password } = req.body;
     const validationResult = SignInUserSchema.safeParse({ username, password });
     if (validationResult.success) {
-        console.log("inside success");
         next();
     }
     else {

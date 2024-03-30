@@ -46,13 +46,21 @@ userRouter.post("/signup", userValidate, (req, res) => __awaiter(void 0, void 0,
             }
         });
         const userId = newUser.id;
-        yield prisma.account.create({
+        const newAccount = yield prisma.account.create({
             data: {
                 userId,
                 balance: 1 + Math.random() * 10000
             }
         });
-        const token = yield generateToken(newUser);
+        const signupResponse = {
+            userId,
+            username: newUser.username,
+            firstname: newUser.firstname,
+            lastname: newUser.lastname,
+            accountId: newAccount.id,
+            accountBalance: newAccount.balance
+        };
+        const token = yield generateToken(signupResponse);
         res.status(201).json({ message: "user created successfully", token });
     }
     catch (error) {
@@ -72,23 +80,37 @@ userRouter.post("/signin", SignInUserValidation, (req, res) => __awaiter(void 0,
             const passwordMatch = yield bcrypt_1.default.compare(password, fetchedUser.password);
             if (passwordMatch) {
                 // Passwords match, generate and return a JWT token
-                const token = yield generateToken(fetchedUser);
+                //if password matches then we will procced with fetching the account details
+                const accountDetails = yield prisma.account.findMany({
+                    where: {
+                        userId: fetchedUser.id,
+                    }
+                });
+                const loggedInResponse = {
+                    userId: fetchedUser.id,
+                    username: fetchedUser.username,
+                    firstname: fetchedUser.firstname,
+                    lastname: fetchedUser.lastname,
+                    accountId: accountDetails[0].id,
+                    accountBalance: accountDetails[0].balance
+                };
+                const token = yield generateToken(loggedInResponse);
                 return res.status(200).json({ token });
             }
             else {
                 // Passwords do not match
-                return res.status(401).send("Incorrect username or password.");
+                return res.status(401).json({ "errorMessage": "Incorrect username or password." });
             }
         }
         else {
             // User does not exist
-            return res.status(404).send("User not found.");
+            return res.status(404).json({ "errorMessage": "Incorrect username or password." });
         }
     }
     catch (error) {
         // Handle any errors that occur during the sign-in process
         console.error("Error signing in:", error);
-        return res.status(500).send("Internal server error.");
+        return res.status(404).json({ "errorMessage": "Internal server error." });
     }
 }));
 userRouter.put("/update-user", middlewares_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {

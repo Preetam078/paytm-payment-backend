@@ -17,7 +17,7 @@ const bcrypt_1 = __importDefault(require("bcrypt"));
 const { JWT_SECRET } = require("../../utils/config");
 const zod_1 = __importDefault(require("zod"));
 const generateToken = (user) => {
-    const token = jsonwebtoken_1.default.sign({ id: user.id, username: user.username, firstname: user.firstname, lastname: user.lastname }, JWT_SECRET, { expiresIn: "24h" });
+    const token = jsonwebtoken_1.default.sign({ userId: user.userId, username: user.username, firstname: user.firstname, lastname: user.lastname, accountId: user.accountId, accountBalance: user.accountBalance }, JWT_SECRET, { expiresIn: "24h" });
     return token;
 };
 const hashPassword = (password) => __awaiter(void 0, void 0, void 0, function* () {

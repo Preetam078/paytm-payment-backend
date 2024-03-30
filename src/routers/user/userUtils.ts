@@ -9,14 +9,17 @@ interface UserUpdatePayload {
 }
 
 interface UserTokenPayload {
-    id:string, 
+    userId:string, 
     username:string, 
     firstname:string,
-    lastname:string
+    lastname:string, 
+    accountId: string, 
+    accountBalance: string
+
 }
 
 const generateToken = (user:UserTokenPayload) => {
-    const token = jwt.sign({id:user.id, username:user.username, firstname:user.firstname, lastname:user.lastname}, JWT_SECRET, {expiresIn: "24h"})
+    const token = jwt.sign({userId: user.userId, username:user.username, firstname:user.firstname, lastname:user.lastname, accountId: user.accountId, accountBalance: user.accountBalance}, JWT_SECRET, {expiresIn: "24h"})
     return token
 }
 
