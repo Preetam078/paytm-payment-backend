@@ -19,6 +19,28 @@ const client_1 = require("@prisma/client");
 const { errorLog, info } = require("../../utils/logger");
 exports.accountRouter = express_1.default.Router();
 const prisma = new client_1.PrismaClient();
+exports.accountRouter.get("/accountDetails/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { userId } = req.query; // Use req.query for GET requests to access URL parameters
+        if (!userId) {
+            return res.status(400).json({ error: "userId is required" }); // Respond with an error if userId is missing
+        }
+        console.log("getting userId", userId);
+        const accountDetails = yield prisma.account.findMany({
+            where: {
+                userId // Assuming userId is a number, parse it accordingly
+            }
+        });
+        if (accountDetails.length === 0) {
+            return res.status(404).json({ error: "No account found for the given userId" }); // Respond with an error if no account is found
+        }
+        res.status(200).json(accountDetails); // Respond with the account details
+    }
+    catch (error) {
+        console.error(error); // Log the error for debugging
+        res.status(500).json({ error: "Internal server error" }); // Respond with a generic error for any unexpected errors
+    }
+}));
 exports.accountRouter.get("/balance", middlewares_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const accountDetails = yield prisma.account.findMany({

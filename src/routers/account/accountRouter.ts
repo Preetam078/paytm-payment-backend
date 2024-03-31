@@ -6,6 +6,31 @@ const {errorLog, info} = require("../../utils/logger")
 export const accountRouter:Router = express.Router();
 const prisma:any = new PrismaClient();
 
+accountRouter.get("/accountDetails/", async(req:Request, res:Response) => {
+    try {
+        const {userId}  = req.query; // Use req.query for GET requests to access URL parameters
+        if (!userId) {
+            return res.status(400).json({ error: "userId is required" }); // Respond with an error if userId is missing
+        }
+
+        console.log("getting userId", userId)
+        const accountDetails = await prisma.account.findMany({
+            where: {
+                userId// Assuming userId is a number, parse it accordingly
+            }
+        });
+
+        if (accountDetails.length === 0) {
+            return res.status(404).json({ error: "No account found for the given userId" }); // Respond with an error if no account is found
+        }
+
+        res.status(200).json(accountDetails); // Respond with the account details
+    } catch (error) {
+        console.error(error); // Log the error for debugging
+        res.status(500).json({ error: "Internal server error" }); // Respond with a generic error for any unexpected errors
+    }
+})
+
 accountRouter.get("/balance", authMiddleware, async(req:Request, res:Response) => {
     try {
         const accountDetails = await prisma.account.findMany({
