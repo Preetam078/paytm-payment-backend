@@ -31,7 +31,7 @@ userRouter.get("/all", (req, res) => __awaiter(void 0, void 0, void 0, function*
             ]
         }
     });
-    res.send(allUser);
+    res.status(201).json(allUser);
 }));
 userRouter.post("/signup", userValidate, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {

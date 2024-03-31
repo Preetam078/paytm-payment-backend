@@ -19,7 +19,7 @@ userRouter.get("/all", async(req:Request, res:Response) => {
             ]
         }
     });
-    res.send(allUser)
+    res.status(201).json(allUser)
 })
 
 userRouter.post("/signup",userValidate, async(req:Request, res:Response) => {
