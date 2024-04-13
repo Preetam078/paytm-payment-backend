@@ -61,7 +61,6 @@ accountRouter.post('/transfer', authMiddleware, async(req:Request, res: Response
         if(!senderAccount || senderAccount.balance < amount || !recieverAccount) {
             return res.status(201).send("sender has unsufficient account balance or sender/reciever doesnot exist")
         }
-
         await prisma.$transaction([
             // debiting amount from sender account
             prisma.account.update({

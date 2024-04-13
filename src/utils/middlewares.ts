@@ -11,7 +11,7 @@ declare global {
     }
 }
 
-export const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
+export const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const authHeader = req.headers.authorization;
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -19,9 +19,10 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction) 
         }
     
         const token = authHeader.split(' ')[1];
-        const decodedData = jwt.verify(token, JWT_SECRET) as { id: string, username: string };
-        console.log(decodedData)
-        req.userId = decodedData.id
+        const decodedData = await jwt.verify(token, JWT_SECRET) as { userId: string, username: string };
+        console.log("getting decoded Data.....",decodedData)
+        req.userId = decodedData.userId
+        console.log("before leaving middleware.....",req.userId)
         next();
     } catch (error) {
         errorLog(error);
